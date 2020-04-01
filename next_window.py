@@ -60,7 +60,7 @@ def request(title):
     comments = []
     tags = []
 
-    request = youtube.search().list(q=title, part='snippet', type='video', maxResults=5)
+    request = youtube.search().list(q=title, part='snippet', type='video', maxResults=10)
     response = request.execute()
 
     for item in response['items']:
@@ -152,7 +152,7 @@ def request(title):
 
 
 
-    for u in range(5):
+    for u in range(10):
         insertVaribleIntoTable(titles[u], descriptions[u], categories[u], durations[u], ids[u], links[u],
                                publishDate[u],
                                channels[u], thumbnails[u], views[u], likes[u], dislikes[u], comments[u], tags[u])
