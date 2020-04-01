@@ -1,4 +1,3 @@
-import threading
 import googleapiclient.discovery
 import googleapiclient.errors
 import sqlite3
@@ -13,7 +12,6 @@ youtube = None
 def insertVaribleIntoTable(tytul, opis, kategoria, dlugosc_filmu, id_filmu, link_do_filmu, data_wydania_filmu, link_do_kanalu, link_do_miniaturki, liczba_wyswietlen, liczba_likow, liczba_dislikow, l_komentarzy, tagi):
     sqliteConnection = sqlite3.connect('BazaDanych.db')
     cursor = sqliteConnection.cursor()
-    #print("Connected to SQLite")
     try:
         sqlite_insert_with_param = """INSERT INTO 'Filmy'
                         ('tytul', 'opis', 'kategoria', 'dlugosc_filmu', 'id_filmu', 'link_do_filmu', 'data_wstawienia', 'link_do_kanalu', 'link_do_miniaturki', 'liczba_wyswielen', 'liczba_likow', 'liczba_dislikow', 'liczba_komentarzy', 'tagi') 
@@ -45,12 +43,8 @@ def __init__():
     youtube = googleapiclient.discovery.build(api_service_name, api_version,
                                             developerKey='AIzaSyBlzZsxyUDdJSkuavWMD7_l5EuYCAS4QYM')
 
-    global lock
-    lock = threading.Lock()
-
 
 def request(title):
-    #print('Request started')
     titles = []
     descriptions = []
     categories = []
@@ -64,15 +58,10 @@ def request(title):
     likes = []
     dislikes = []
     comments = []
-    #tagsLists = []
     tags = []
-
-    # print('Szukaj: ', end='')
-    # title = input()
 
     request = youtube.search().list(q=title, part='snippet', type='video', maxResults=5)
     response = request.execute()
-    #print(response)
 
     for item in response['items']:
         titles.append(item['snippet']['title'])
@@ -94,7 +83,6 @@ def request(title):
                 descriptions.append(item['snippet']['description'])
             except:
                 descriptions.append('Brak')
-            #durations.append(item['contentDetails']['duration'])
             dur = isodate.parse_duration(item['contentDetails']['duration'])
             durations.append(str(dur))
             try:
@@ -122,7 +110,6 @@ def request(title):
                         tagsString += tag
                         tagsString += ', '
                 tags.append(tagsString)
-                # print(tagsString)
             except:
                 tags.append('Brak')
             try:
@@ -170,7 +157,6 @@ def request(title):
                                publishDate[u],
                                channels[u], thumbnails[u], views[u], likes[u], dislikes[u], comments[u], tags[u])
 
-    #print('Database updated')
 
 
 class Ui_OtherWindow(object):
@@ -201,7 +187,6 @@ class Ui_OtherWindow(object):
             text2 = self.lineEdit_2.text()
             text3 = self.lineEdit_3.text()
             text4 = self.lineEdit_4.text()
-            #print(text, ", " ,text2,", ", text3,", ", text4)
             inputs = []
             i = 0
             if text:
@@ -223,7 +208,6 @@ class Ui_OtherWindow(object):
 
             show_popup("Wykonano zadanie!", "Wszystkie dane zostały poprawnie dodane do bazy")
 
-            #print(inputs, " and ", i)
 
         self.SearchButton.clicked.connect(lambda: printthis(self))
 

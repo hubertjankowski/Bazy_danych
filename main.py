@@ -1,8 +1,6 @@
 import sqlite3
 import json
-# from sql_xml_table import table
-import xml.etree.ElementTree as ET
-import collections
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from next_window import Ui_OtherWindow, __init__, show_popup, request
 
@@ -22,6 +20,34 @@ class Ui_MainWindow(object):
                 self.tableWidget.setItem(row_number, column_number, QtWidgets.QTableWidgetItem(str(data)))
 
         sqliteConnection.close()
+
+    def exportJSON(self):
+        sqliteConnection = sqlite3.connect('BazaDanych.db')
+        sqlite_select_query = """SELECT * FROM Filmy"""
+        cursor = sqliteConnection.cursor()
+        result = cursor.execute(sqlite_select_query)
+        items = []
+        for row in result:
+            items.append({'tytul': row[0],
+                          'opis': row[1],
+                          'kategoria': row[2],
+                          'dlugosc_filmu': row[3],
+                          'id_filmu': row[4],
+                          'link_do_filmu': row[5],
+                          'data_publikacji': row[6],
+                          'link_do_kanalu': row[7],
+                          'link_do_miniaturki': row[8],
+                          'liczba_wyswielen': row[9],
+                          'liczba_likow': row[10],
+                          'liczba_dislikow': row[11],
+                          'liczba_komentarzy': row[12],
+                          'tagi': row[13]})
+        sqliteConnection.close()
+        with open('BazaDanych.json', 'w') as outfile:
+            json.dump('Filmy:', outfile)
+            json.dump(items, outfile, sort_keys=True, indent=4, separators=(',', ': '))
+
+        show_popup("Wykonano zadanie!", "Baza zostala pomyslnie wyeksportowana do pliku JSON")
 
     def openWindow(self):
         self.window = QtWidgets.QMainWindow()
@@ -47,6 +73,13 @@ class Ui_MainWindow(object):
         self.Load_data.setGeometry(QtCore.QRect(640, 10, 151, 41))
         self.Load_data.setObjectName("Load_data")
         self.Load_data.clicked.connect(self.loaddata)
+
+        self.Create_json = QtWidgets.QPushButton(self.centralwidget)
+        self.Create_json.setGeometry(QtCore.QRect(640, 160, 151, 41))
+        self.Create_json.setObjectName("Create_json")
+        self.Create_json.clicked.connect(self.exportJSON)
+
+
         self.Sort = QtWidgets.QComboBox(self.centralwidget)
         self.Sort.setGeometry(QtCore.QRect(640, 60, 151, 41))
         self.Sort.setObjectName("Sort")
@@ -59,23 +92,6 @@ class Ui_MainWindow(object):
         self.Sort.addItem("")
         self.Sort.addItem("")
         self.Sort.addItem("")
-
-        # self.Export = QtWidgets.QComboBox(self.centralwidget)
-        # self.Export.setGeometry(QtCore.QRect(640, 110, 151, 41))
-        # self.Export.setObjectName("Export")
-        # self.Export.addItem("")
-        # self.Export.addItem("")
-        # self.comboBox1 = QtWidgets.QComboBox(self.centralwidget)
-        # self.comboBox1.setGeometry(QtCore.QRect(640, 60, 151, 41))
-        # font = QtGui.QFont()
-        # font.setPointSize(14)
-        # self.comboBox1.setFont(font)
-        # self.comboBox1.setObjectName("comboBox1")
-        # self.comboBox1.addItem("")
-        # self.comboBox1.addItem("")
-        # self.comboBox1.addItem("")
-        # self.comboBox1.addItem("")
-        # self.comboBox1.addItem("")
 
         def szukaj_tytul(self):
             sqliteConnection = sqlite3.connect('BazaDanych.db')
@@ -128,11 +144,7 @@ class Ui_MainWindow(object):
                     self.tableWidget.setItem(row_number, column_number, QtWidgets.QTableWidgetItem(str(data)))
 
             sqliteConnection.close()
-
-        # self.comboBox1.currentIndexChanged.connect(lambda: wybierz(self))
         self.Sort.currentIndexChanged.connect(lambda: sortuj(self))
-
-        # self.Export.currentIndexChanged.connect(lambda: export(self))
 
         def wybierz(self):
             cb = str(self.comboBox1.currentText())
@@ -350,7 +362,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Filmy"))
         self.Load_data.setText(_translate("MainWindow", "Wczytaj dane"))
-        # self.comboBox1.setItemText(0, _translate("MainWindow", "Wyszukaj po"))
+        self.Create_json.setText(_translate("MainWindow", "Eksportuj do JSON"))
         self.Sort.setItemText(0, _translate("MainWindow", "Sortuj"))
         self.Sort.setItemText(1, _translate("MainWindow", "Tytuł"))
         self.Sort.setItemText(2, _translate("MainWindow", "Kategoria"))
@@ -360,12 +372,6 @@ class Ui_MainWindow(object):
         self.Sort.setItemText(6, _translate("MainWindow", "Liczba like'ów"))
         self.Sort.setItemText(7, _translate("MainWindow", "Liczba dislike'ów"))
         self.Sort.setItemText(8, _translate("MainWindow", "Liczba komentarzy"))
-        # self.Export.setItemText(0, _translate("MainWindow", "Eksportuj do"))
-        # self.Export.setItemText(1, _translate("MainWindow", "XML"))
-        # self.comboBox1.setItemText(0, _translate("MainWindow", "Wszystko"))
-        # self.comboBox1.setItemText(1, _translate("MainWindow", "Tytul"))
-        # self.comboBox1.setItemText(2, _translate("MainWindow", "Liczba wyswietlen"))
-        # self.comboBox1.setItemText(3, _translate("MainWindow", "Liczba likow"))
         self.search_films.setText(_translate("MainWindow", "Wyszkukaj filmy"))
         self.menuNew.setTitle(_translate("MainWindow", "Nowy"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edytuj"))
@@ -387,52 +393,20 @@ class Ui_MainWindow(object):
         self.actionImie1.setText(_translate("MainWindow", "Tomasz Musiałek"))
         self.actionImie1.setStatusTip(_translate("MainWindow", "tomasz.musialek@student.put.poznan.pl"))
 
-
-def exportJSON():
-    sqliteConnection = sqlite3.connect('BazaDanych.db')
-    sqlite_select_query = """SELECT * FROM Filmy"""
-    cursor = sqliteConnection.cursor()
-    result = cursor.execute(sqlite_select_query)
-    items = []
-    for row in result:
-        items.append({'tytul': row[0],
-                      'opis': row[1],
-                      'kategoria': row[2],
-                      'dlugosc_filmu': row[3],
-                      'id_filmu': row[4],
-                      'link_do_filmu': row[5],
-                      'data_publikacji': row[6],
-                      'link_do_kanalu': row[7],
-                      'link_do_miniaturki': row[8],
-                      'liczba_wyswielen': row[9],
-                      'liczba_likow': row[10],
-                      'liczba_dislikow': row[11],
-                      'liczba_komentarzy': row[12],
-                      'tagi': row[13]})
-    sqliteConnection.close()
-    with open('BazaDanych.json', 'w') as outfile:
-        json.dump('Filmy:', outfile)
-        json.dump(items, outfile, sort_keys=True, indent=4, separators=(',', ': '))
-    print('Pomyślnie wyeksportowano bazę danych.')
-
-
 # Tworze nowa baze
 def stworz():
     sqliteConnection = sqlite3.connect('BazaDanych.db')
     cursor = sqliteConnection.cursor()
-    # print("Database created and Successfully Connected to SQLite")
 
     sqlite_select_Query = "select sqlite_version();"
     cursor.execute(sqlite_select_Query)
     record = cursor.fetchall()
-    # print("SQLite Database Version is: ", record)
     cursor.close()
 
 
 def polaczenie():
     sqliteConnection = sqlite3.connect('BazaDanych.db')
     cursor = sqliteConnection.cursor()
-    # print("Successfully Connected to SQLite and Database")
 
 
 # Tworze tabele ktora bedzie przetrzymywac dane wyszukiwan
@@ -456,11 +430,8 @@ def stworz_tab():
                                 UNIQUE(tytul));'''
 
     cursor = sqliteConnection.cursor()
-    # print("Successfully Connected to SQLite and create table")
     cursor.execute(sqlite_create_table_query)
     sqliteConnection.commit()
-    # print("SQLite table created")
-
     cursor.close()
 
 
@@ -470,7 +441,6 @@ def usun_tabele():
     cursor = sqliteConnection.cursor()
     cursor.execute(sqlite_create_table_query)
     sqliteConnection.commit()
-    # print("SQLite table delated")
 
 
 # funkcja sluzy do wyswietlania tabeli w programie
